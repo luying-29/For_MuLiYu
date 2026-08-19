@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 穆李宇的24岁奇妙世界 ✨</title>
+    <!-- 引入特效库 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Afacad+Flux:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* 1. 基础样式 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Afacad Flux', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #ffd3e0 0%, #ffeaa7 50%, #ffc3a0 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 12s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: hidden;
+            color: #4a4a4a;
+            padding: 40px 20px 100px 20px; 
+            cursor: url('https://cdn-icons-png.flaticon.com/32/1005/1005111.png'), auto; 
+            transition: all 2s ease;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #night-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #090a0f 0%, #1c1a27 80%, #302b63 100%);
+            opacity: 0; pointer-events: none;
+            transition: opacity 3s ease; z-index: 0;
+        }
+
+        /* 2. 开场信封动画 */
+        #envelope-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px);
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 1.5s ease, visibility 1.5s;
+        }
+
+        .envelope-card {
+            background: #fff; padding: 65px 50px; border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(255, 154, 158, 0.3);
+            text-align: center; border: 3px dashed #ff9a9e; max-width: 90%; width: 400px;
+            animation: envelopeFloat 4s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .envelope-card::before {
+            content: '✿';
+            position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            font-size: 30px; color: #ff9a9e; background: #fff; padding: 0 10px;
+        }
+
+        @keyframes envelopeFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .envelope-card h2 { font-family: 'Comfortaa'; color: #ff6b81; margin-bottom: 25px; letter-spacing: 3px; font-size: 32px; text-shadow: 1px 1px 2px rgba(255,107,129,0.2);}
+        
+        .open-btn {
+            background: linear-gradient(45deg, #ff6b81, #ff4757); color: white; 
+            border: none; padding: 15px 45px; font-size: 18px;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 8px 25px rgba(255, 107, 129, 0.4);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); font-weight: bold; letter-spacing: 1px;
+        }
+        .open-btn:hover { transform: scale(1.1) translateY(-2px); box-shadow: 0 12px 30px rgba(255, 107, 129, 0.6); }
+
+        /* 3. 主体内容容器 */
+        .container {
+            background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(25px);
+            border: 2px solid rgba(255, 255, 255, 0.9); border-radius: 35px;
+            padding: 45px 35px; width: 100%; max-width: 600px;
+            box-shadow: 0 25px 60px rgba(255, 166, 191, 0.3); text-align: center;
+            opacity: 0; transform: translateY(50px); transition: all 1.5s ease;
+            z-index: 1; margin: auto;
+        }
+
+        .container.night-mode {
+            background: rgba(20, 20, 35, 0.85); border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 70px rgba(254, 202, 87, 0.25); color: #f1f2f6;
+        }
+
+        .container.show-up { opacity: 1; transform: translateY(0); }
+
+        h1 { font-family: 'Comfortaa'; color: #ff6b81; font-size: 32px; margin-bottom: 12px; transition: color 2s ease; text-shadow: 0 2px 4px rgba(255,107,129,0.1);}
+        .container.night-mode h1 { color: #feca57; text-shadow: 0 0 20px rgba(254, 202, 87, 0.8); }
+
+        .subtitle { color: #e58e26; font-size: 16px; margin-bottom: 15px; font-weight: 600; letter-spacing: 1px; transition: color 2s ease; }
+        .container.night-mode .subtitle { color: #d1d8e0; }
+
+        /* 4. 纯文字手札卡片系统 */
+        .story-card {
+            display: none; padding: 35px 30px;
+            margin-top: 25px; border-radius: 20px; opacity: 0; transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), background 2s ease, transform 0.4s ease, box-shadow 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06); 
+            border: 2px dashed rgba(255,255,255,0.9);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .story-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+
+        #ch1 { background: rgba(255, 240, 245, 0.85); border-color: #ff9ff3; }
+        #ch2 { background: rgba(255, 250, 240, 0.85); border-color: #feca57; }
+        #ch3 { background: rgba(255, 235, 235, 0.85); border-color: #ff6b6b; }
+        #ch4 { background: rgba(255, 255, 255, 0.9); border-color: #1dd1a1; border-style: solid; padding: 25px;}
+        #ch5 { background: rgba(255, 107, 129, 0.15); border-color: #ff9ff3; border-style: solid; box-shadow: inset 0 0 20px rgba(255,159,243,0.2);}
+
+        .container.night-mode .story-card { background: rgba(30, 30, 50, 0.9); border-color: #4a4a6a; }
+
+        .story-card.show { display: block; }
+        .story-card.fade-in { opacity: 1; transform: translateY(0); }
+
+        .story-card h3 { font-size: 22px; font-family: 'Comfortaa'; margin-bottom: 18px; transition: color 2s ease; letter-spacing: 1px;}
+        #ch1 h3 { color: #f368e0; }
+        #ch2 h3 { color: #e15f41; }
+        #ch3 h3 { color: #ff4757; }
+        .container.night-mode .story-card h3 { color: #ff9ff3 !important; }
+
+        .story-card p { font-size: 16px; color: #576574; line-height: 1.9; text-align: left; transition: color 2s ease;}
+        .container.night-mode .story-card p { color: #c8d6e5; }
+
+        /* 5. 交互按钮 */
+        .btn-wrapper {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .magic-btn {
+            background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 100%);
+            color: #d1395c; border: 3px solid #fff; padding: 18px 45px;
+            font-size: 18px; font-weight: bold; border-radius: 60px;
+            cursor: pointer; box-shadow: 0 0 25px rgba(255, 154, 158, 0.5);
+            animation: breathing 2s infinite alternate;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1px;
+            width: auto;
+        }
+
+        .magic-btn.night-btn {
+            background: linear-gradient(45deg, #feca57 0%, #ff9f43 100%);
+            color: #fff; border-color: #feca57; box-shadow: 0 0 35px rgba(254, 202, 87, 0.8);
+        }
+
+        @keyframes breathing {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.06); }
+        }
+
+        /* 地图与打字机 */
+        #travelMap { width: 100%; height: 280px; border-radius: 15px; margin-top: 15px; z-index: 1; transition: filter 2s ease; border: 1px solid rgba(0,0,0,0.05);}
+        .container.night-mode #travelMap { filter: brightness(0.8) contrast(1.1); border-color: #4a4a6a;}
+
+        .typewriter-text {
+            font-size: 16px; line-height: 2; color: #fff !important; 
+            text-align: left; min-height: 220px; font-weight: 500;
+            text-shadow: 0 0 10px rgba(255,255,255,0.25);
+        }
+
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* =========================================
+           📱 移动端专属适配 (Media Queries) 
+           ========================================= */
+        @media screen and (max-width: 600px) {
+            body { padding: 25px 15px 80px 15px; } /* 缩小四周空白 */
+            
+            .envelope-card { padding: 40px 25px; width: 95%; }
+            .envelope-card h2 { font-size: 26px; margin-bottom: 20px; }
+            .open-btn { padding: 12px 35px; font-size: 16px; }
+
+            .container { padding: 30px 20px; border-radius: 25px; }
+            h1 { font-size: 26px; margin-bottom: 8px; }
+            .subtitle { font-size: 14px; margin-bottom: 20px; }
+
+            .story-card { padding: 25px 20px; margin-top: 20px; border-radius: 15px; }
+            #ch4 { padding: 20px 15px; } /* 地图卡片特别减小内边距 */
+            
+            .story-card h3 { font-size: 20px; margin-bottom: 12px; }
+            .story-card p { font-size: 15px; line-height: 1.8; }
+
+            .btn-wrapper { margin-top: 30px; }
+            .magic-btn { padding: 15px 30px; font-size: 16px; width: 90%; max-width: 300px; text-align: center; } /* 宽按钮更好点 */
+            
+            #travelMap { height: 220px; } /* 缩减地图高度 */
+            
+            /* 小屏幕折行多，增加打字机预留高度防止跳动 */
+            .typewriter-text { font-size: 15px; min-height: 280px; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="night-overlay"></div>
+    <audio id="bgmMusic" src="./bgm.mp3" loop preload="auto"></audio>
+
+    <div id="envelope-screen">
+        <div class="envelope-card">
+            <h2>💌 To 穆李宇</h2>
+            <p style="color: #747d8c; margin-bottom: 35px; font-size: 16px; font-weight: bold;">开启属于你的 24 岁奇妙信件</p>
+            <button class="open-btn" id="openEnvelopeBtn">拆开信封</button>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <h1>👑 穆李宇，生日快乐 👑</h1>
+        <p class="subtitle">2002.09.02 · 永远闪耀 · 永远可爱</p>
+        
+        <div id="story-board">
+            <div class="story-card" id="ch1" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.15">
+                <h3>🏰 第一章：在逃公主</h3>
+                <p>愿你像迪士尼公主一样，永远保持善良、勇敢与对世界的好奇。新的一岁，所有的奇妙和星光都为你停留！</p>
+            </div>
+
+            <div class="story-card" id="ch2" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.15">
+                <h3>🏮 第二章：同福客栈</h3>
+                <p>“嘿，兄弟！我们好久不见你在哪里！” <br><br>愿你的生活充满欢声笑语，有知己相伴。额滴神啊，新的一岁一定要狠狠开心！</p>
+            </div>
+
+            <div class="story-card" id="ch3" data-tilt data-tilt-glare="true" data-tilt-max-glare="0.15">
+                <h3>🌸 第三章：大女主剧本</h3>
+                <p>像明兰一样通透坚韧，像沈璃一样霸气洒脱。无论面对什么挑战，你都能披荆斩棘，活出最漂亮的人生！</p>
+            </div>
+
+            <div class="story-card" id="ch4">
+                <h3 style="color: #1dd1a1;">🗺️ 第四章：丈量世界</h3>
+                <p>从武汉、长沙、南昌，到大连、沈阳、锦州、秦皇岛。我们的回忆就像这份专属地图一样，闪闪发光！</p>
+                <div id="travelMap"></div>
+            </div>
+
+            <div class="story-card" id="ch5">
+                <h3 style="color: #ffeb3b; text-align: center; text-shadow: 0 0 15px rgba(255, 235, 59, 0.7);">🎇 终极彩蛋：专属浪漫</h3>
+                <p class="typewriter-text" id="typeText"></p>
+            </div>
+        </div>
+
+        <div class="btn-wrapper">
+            <button class="magic-btn" id="unlockBtn">✨ 开启魔法世界 ✨</button>
+        </div>
+    </div>
+
+    <script>
+        const envelopeScreen = document.getElementById('envelope-screen');
+        const openEnvelopeBtn = document.getElementById('openEnvelopeBtn');
+        const mainContainer = document.getElementById('mainContainer');
+        const nightOverlay = document.getElementById('night-overlay');
+        const bgm = document.getElementById('bgmMusic');
+        const btn = document.getElementById('unlockBtn');
+        
+        const chapters = [
+            document.getElementById('ch1'), document.getElementById('ch2'),
+            document.getElementById('ch3'), document.getElementById('ch4'),
+            document.getElementById('ch5')
+        ];
+        
+        let currentClick = 0;
+        let mapInitialized = false;
+
+        // 1. 信封开启
+        openEnvelopeBtn.addEventListener('click', () => {
+            bgm.play().catch(() => console.log("互动后播放"));
+            envelopeScreen.style.opacity = '0';
+            setTimeout(() => {
+                envelopeScreen.style.visibility = 'hidden';
+                mainContainer.classList.add('show-up');
+            }, 1000);
+        });
+
+        // 2. 篇章解锁与智能滚动
+        btn.addEventListener('click', () => {
+            if (currentClick < 4) {
+                confetti({
+                    particleCount: 150, spread: 70, origin: { y: 0.8 },
+                    colors: ['#FFB6C1', '#FFD700', '#FFF0F5', '#FFA07A']
+                });
+            }
+
+            if (currentClick === 4) triggerNightShow();
+
+            if (currentClick === 5) {
+                window.location.href = './cake.html';
+                return;
+            }
+
+            if (currentClick < chapters.length) {
+                const chap = chapters[currentClick];
+                chap.classList.add('show');
+                
+                setTimeout(() => {
+                    chap.classList.add('fade-in');
+                    // 手机端禁用 3D 悬浮，防止拖拽页面时卡顿
+                    if (chap.hasAttribute('data-tilt') && window.innerWidth > 600) VanillaTilt.init(chap);
+                    
+                    if (currentClick === 4) setTimeout(initMap, 800);
+                    if (currentClick === 5) startTypewriter();
+
+                    setTimeout(() => {
+                        btn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }, 300);
+
+                }, 50);
+
+                currentClick++;
+
+                const btnTexts = ["🏮 穿越同福客栈", "🌸 翻开女主剧本", "🗺️ 点亮旅行地图", "🎆 揭开终极彩蛋", "✨ 前往星空许愿 ✨"];
+                btn.innerText = btnTexts[currentClick - 1];
+                
+                if (currentClick === 4) btn.classList.add('night-btn');
+                if (currentClick === 5) {
+                    btn.style.background = "linear-gradient(45deg, #302b63, #0f0c29)";
+                    btn.style.border = "2px solid #ffdf85";
+                }
+            }
+        });
+
+        // 3. 夜空与烟花
+        function triggerNightShow() {
+            nightOverlay.style.opacity = '1';
+            mainContainer.classList.add('night-mode');
+
+            let end = Date.now() + (25 * 1000);
+            (function frame() {
+                confetti({ particleCount: 4, angle: 60, spread: 65, origin: { x: 0 }, colors: ['#ff9ff3', '#feca57', '#fff'] });
+                confetti({ particleCount: 4, angle: 120, spread: 65, origin: { x: 1 }, colors: ['#ff9ff3', '#feca57', '#fff'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        // 4. 打字机
+        function startTypewriter() {
+            const textElement = document.getElementById('typeText');
+            const text = "最后，藏一点我的专属浪漫：<br><br>在平时的研究里，我习惯了在屏幕前敲着代码，试图用各种复杂的模型去推导数据间的因果关联。<br><br>但在我心里，不需要任何模型，就能得出那个最显著的结论：<br><b>遇见你，是我这几年最大的幸运。</b><br><br>我们的友谊，永远是 1% 水平上最显著的最优解。✨<br><br>穆李宇，24岁生日快乐！";
+            
+            let i = 0, currentHTML = "";
+            function type() {
+                if (i < text.length) {
+                    let char = text.charAt(i);
+                    if (char === '<') {
+                        let endTag = text.indexOf('>', i);
+                        currentHTML += text.substring(i, endTag + 1);
+                        i = endTag + 1;
+                    } else {
+                        currentHTML += char; i++;
+                    }
+                    textElement.innerHTML = currentHTML;
+                    btn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    setTimeout(type, 60);
+                }
+            }
+            type();
+        }
+
+        // 5. 地图
+        function initMap() {
+            if (mapInitialized) return;
+            
+            // 🚨 针对手机端的优化：禁用地图拖拽，防止页面无法上下滑动
+            const isMobile = window.innerWidth <= 600;
+            const map = L.map('travelMap', { 
+                zoomControl: false,
+                dragging: !isMobile, // 手机上禁止拖拽地图
+                touchZoom: !isMobile,
+                scrollWheelZoom: false
+            }).setView([34.5, 118.0], 5);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+            const r24 = [[30.5928, 114.3055], [28.2282, 112.9388], [28.6820, 115.8579]];
+            const r26 = [[38.9140, 121.6147], [41.8057, 123.4315], [41.1193, 121.1270], [39.9354, 119.5866]];
+
+            L.polyline(r24, { color: '#ff9ff3', weight: 4, dashArray: '5, 10' }).addTo(map);
+            L.polyline(r26, { color: '#feca57', weight: 4, dashArray: '5, 10' }).addTo(map);
+
+            const pts = [
+                {c: [30.5928, 114.3055], n: "2024·武汉"}, {c: [28.2282, 112.9388], n: "2024·长沙"},
+                {c: [28.6820, 115.8579], n: "2024·南昌"}, {c: [38.9140, 121.6147], n: "2026·大连"},
+                {c: [41.8057, 123.4315], n: "2026·沈阳"}, {c: [41.1193, 121.1270], n: "2026·锦州"},
+                {c: [39.9354, 119.5866], n: "2026·秦皇岛"}
+            ];
+            pts.forEach(p => {
+                L.circleMarker(p.c, { radius: 6, fillColor: '#ff6b81', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map).bindPopup(`<b>${p.n}</b>`);
+            });
+            map.invalidateSize();
+            mapInitialized = true;
+        }
+    </script>
+</body>
+</html>

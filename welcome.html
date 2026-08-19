@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 您的 24 岁奇妙航班已就绪 ✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Afacad+Flux:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Afacad Flux', sans-serif;
+            background: linear-gradient(135deg, #ffd3e0 0%, #ffeaa7 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            cursor: url('https://cdn-icons-png.flaticon.com/32/1005/1005111.png'), auto; 
+        }
+
+        /* 漂浮的装饰气泡 */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s infinite ease-in-out;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-100px) scale(1.2); }
+        }
+
+        /* 机票主体 */
+        .ticket {
+            width: 650px;
+            height: 300px;
+            background: #fff;
+            border-radius: 20px;
+            display: flex;
+            box-shadow: 0 20px 50px rgba(255, 154, 158, 0.3);
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.05));
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ticket:hover {
+            transform: scale(1.02) rotate(-1deg);
+        }
+
+        /* 左侧：主票面 */
+        .ticket-main {
+            flex: 2.5;
+            padding: 30px;
+            border-right: 2px dashed #ff9a9e;
+            position: relative;
+        }
+
+        /* 锯齿切口 */
+        .ticket-main::after, .ticket-main::before {
+            content: '';
+            position: absolute;
+            right: -11px;
+            width: 22px;
+            height: 22px;
+            background: #ffd3e0; /* 与背景色融为一体 */
+            border-radius: 50%;
+        }
+        .ticket-main::before { top: -11px; }
+        .ticket-main::after { bottom: -11px; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-family: 'Comfortaa';
+            font-weight: 700;
+            color: #ff6b81;
+            font-size: 20px;
+        }
+
+        .flight-info {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .city h2 { font-size: 32px; color: #4a4a4a; font-family: 'Comfortaa'; }
+        .city p { font-size: 12px; color: #a4b0be; text-transform: uppercase; letter-spacing: 1px; }
+
+        .airplane {
+            padding-top: 10px;
+            color: #feca57;
+            font-size: 24px;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: left;
+        }
+
+        .detail-item label { font-size: 10px; color: #a4b0be; text-transform: uppercase; display: block; }
+        .detail-item span { font-size: 16px; color: #4a4a4a; font-weight: 600; }
+
+        /* 右侧：存根 */
+        .ticket-stub {
+            flex: 1;
+            padding: 30px;
+            background: rgba(255, 107, 129, 0.05);
+            border-radius: 0 20px 20px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stub-info label { font-size: 10px; color: #a4b0be; text-transform: uppercase; }
+        .stub-info h3 { font-family: 'Comfortaa'; color: #ff6b81; font-size: 24px; margin: 5px 0 20px 0; }
+
+        /* 确认登机按钮 */
+        .check-in-btn {
+            background: linear-gradient(45deg, #ff9a9e, #ff6b81);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 107, 129, 0.3);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .check-in-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 129, 0.5);
+        }
+
+        /* 装饰条形码 */
+        .barcode {
+            margin-top: 15px;
+            width: 100%;
+            height: 40px;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Ean-13-5901234123457.png/640px-Ean-13-5901234123457.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.6;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="bubble" style="width: 100px; height: 100px; left: 10%; top: 20%;"></div>
+    <div class="bubble" style="width: 150px; height: 150px; right: 15%; bottom: 10%; animation-delay: 2s;"></div>
+    <div class="bubble" style="width: 80px; height: 80px; left: 40%; bottom: 20%; animation-delay: 5s;"></div>
+
+    <div class="ticket">
+        <div class="ticket-main">
+            <div class="header">
+                <div class="logo">MU LI YU AIR</div>
+                <div style="font-size: 12px; color: #ff9a9e; font-weight: bold;">SPECIAL BOARDING PASS</div>
+            </div>
+            
+            <div class="flight-info">
+                <div class="city">
+                    <h2>23 Y</h2>
+                    <p>Origin / 曾经历</p>
+                </div>
+                <div class="airplane">✈️</div>
+                <div class="city">
+                    <h2>24 Y</h2>
+                    <p>Destination / 奇妙未来</p>
+                </div>
+            </div>
+
+            <div class="details">
+                <div class="detail-item">
+                    <label>Passenger / 乘客</label>
+                    <span>穆李宇</span>
+                </div>
+                <div class="detail-item">
+                    <label>Flight / 航班</label>
+                    <span>ML0902</span>
+                </div>
+                <div class="detail-item">
+                    <label>Date / 日期</label>
+                    <span>2026.09.02</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ticket-stub">
+            <div class="stub-info">
+                <label>Gate / 登机口</label>
+                <h3>24 A</h3>
+                <a href="./index.html" class="check-in-btn">点击登机</a>
+            </div>
+            <div class="barcode"></div>
+        </div>
+    </div>
+
+    <script>
+        // 简单的入场特效
+        document.querySelector('.ticket').style.opacity = '0';
+        document.querySelector('.ticket').style.transform = 'translateY(50px)';
+        
+        window.onload = () => {
+            setTimeout(() => {
+                const t = document.querySelector('.ticket');
+                t.style.transition = 'all 1.5s ease';
+                t.style.opacity = '1';
+                t.style.transform = 'translateY(0) rotate(-1deg)';
+            }, 500);
+        };
+    </script>
+</body>
+</html>
